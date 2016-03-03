@@ -1,6 +1,7 @@
 # TODO: Add comment
+# http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR/
+# https://archive.ics.uci.edu/ml/machine-learning-databases/coil-mld/
 # 
-# Author: Jekaterina Novikova
 ###############################################################################
 
 

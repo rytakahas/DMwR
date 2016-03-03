@@ -1,6 +1,7 @@
 # TODO: Add comment
+#
+# http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR/
 # 
-# Author: DMwR
 ###############################################################################
 
 library(DMwR)
