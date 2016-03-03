@@ -1,2 +1,2 @@
 # DMwR
-DMwR exercise
+DMwR exercises
