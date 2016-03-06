@@ -88,3 +88,10 @@ propNAsQp[order(propNAsQp,decreasing = T)[1:10]]
 sales <- sales[!sales$Prod %in% c("p2442", "p2443")]
 
 nlevels(sales$Prod)
+
+
+
+nnasQp <- tapply(sales$Quant, list(sales$Prod), function(x) sum(is.na(x)))
+propNAsQp <- nnasQp/table(sales$Prod)
+propNAsQp[order(propNAsQp,decreasing = T)[1:10]]
+
