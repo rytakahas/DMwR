@@ -59,3 +59,30 @@ sum(as.double(qs[order(qs$x, decreasing = T)[1:100], 2]))/sum(as.double(Quant), 
 #Bottom quantity saler
 sum(as.double(qs[order(qs$x, decreasing = F)[1:4000], 2]))/sum(as.double(Quant), na.rm = T) * 100
 
+out <- tapply(Uprice, list(Prod = Prod),
+		function(x) length(boxplot.stats(x)$out))
+
+out[order(out, decreasing = T) [1:10]]
+
+sum(out)/nrow(sales) * 100
+
+totS <- table(ID)
+totP <- table(Prod)
+
+nas <- sales[which(is.na(Quant) & is.na(Val)), c("ID", "Prod")]
+
+propS <- 100 * table(nas$ID)/totS
+propS[order(propS, decreasing = T)[1:10]] 
+
+
+propP <- 100 * table(nas$Prod)/totP
+propP[order(propP, decreasing = T)[1:10]] 
+
+detach(sales)
+sales <- sales[-which(is.na(sales$Quant) & is.na(sales$Val)),]
+
+nnasQp <- tapply(sales$Quant, list(sales$Prod), function(x) sum(is.na(x)))
+propNAsQp <- nnasQp/table(sales$Prod)
+propNAsQp[order(propNAsQp,decreasing = T)[1:10]]
+
+sales <- sales[!sales$Prod %in% c("p2442", "p2443")]
