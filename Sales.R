@@ -19,6 +19,7 @@ table(sales$Insp)/nrow(sales) * 100
 topS <- table(sales$ID)
 topP <- table(sales$Prod)
 
+dev.new()
 barplot(topS, main = "Transacrions per salespeople", names.arg = "",
 		xlab = "Salespeople", ylab = "Amount")
 barplot(topP, main = "Transacrions per product", names.arg = "",
@@ -36,6 +37,8 @@ topP
 
 tops <- sales[Prod %in% topP[1,], c("Prod", "Uprice")]
 tops$Prod <- factor(tops$Prod)
+boxplot(Uprice ~ Prod, data = tops, ylab = "Uprice", log = "y")
+dev.new()
 boxplot(Uprice ~ Prod, data = tops, ylab = "Uprice", log = "y")
 
 vs <- aggregate(Val, list(ID), sum, na.rm = T)
@@ -62,8 +65,7 @@ sum(as.double(qs[order(qs$x, decreasing = T)[1:100], 2]))/sum(as.double(Quant), 
 #Bottom quantity saler
 sum(as.double(qs[order(qs$x, decreasing = F)[1:4000], 2]))/sum(as.double(Quant), na.rm = T) * 100
 
-out <- tapply(Uprice, list(Prod = Prod),
-		function(x) length(boxplot.stats(x)$out))
+out <- tapply(Uprice, list(Prod = Prod), function(x) length(boxplot.stats(x)$out))
 
 out[order(out, decreasing = T) [1:10]]
 
@@ -128,13 +130,15 @@ ms <- tapply(Uprice[notF], list(Prod = Prod[notF]), function(x) {
 })
  ms <- matrix(unlist(ms), length(ms), 2, 
 		 byrow = T, dimnames = list(names(ms), c('median','iqr')))
+ dev.new()
  par(mfrow = c(1, 2))
  plot(ms[, 1], ms[, 2], xlab = "Median", ylab = "IQR", main = "")
  plot(ms[, 1], ms[, 2], xlab = "Median", ylab = "IQR", main = "",
 		 col = "grey", log = "xy")
  smalls <- which(table(Prod) < 20)
  points(log(ms[smalls, 1]), log(ms[smalls, 2]), pch = "+")
- 
+
+
 dms <- scale(ms) 
 smalles <- which(table(Prod) < 20)
 prods <- tapply(sales$Uprice, sales$Prod, list)
@@ -162,6 +166,7 @@ library(ROCR)
 data(ROCR.simple)
 pred <- prediction(ROCR.simple$predictions, ROCR.simple$labels)
 pref <- performance(pred, "prec", "rec")
+dev.new()
 plot(pref)
 
 PRCurve <- function(preds, trues, ...) {
@@ -177,6 +182,7 @@ PRCurve(ROCR.simple$predictions, ROCR.simple$labels)
 
 pred <- prediction(ROCR.simple$predictions, ROCR.simple$labels)
 perf <- performance(pred, "lift", "rpp")
+dev.new()
 plot(perf, main = "Lift Chart")
 
 CRChart <- function(preds, trues, ...) {
@@ -185,7 +191,7 @@ CRChart <- function(preds, trues, ...) {
 	pf <- performance(pd, "rec", "rpp")
 	plot(pf, ...)
 }
-
+dev.new()
 CRChart(ROCR.simple$predictions, ROCR.simple$labels, 
 		main = 'Cumlative Recall Chart')
 
@@ -271,6 +277,7 @@ bp.res <- holdOut(learner('ho.BPrule', pars = list(Threshold = 0.1, statsProds =
 
 summary(bp.res)
 
+dev.new()
 par(mfrow = c(1,2))
 info <- attr(bp.res, 'itsInfo')
 PTs.bp <- aperm(array(unlist(info), dim = c(length(info[[1]]),2,3)), c(1,3,2))
@@ -309,6 +316,7 @@ lof.res <- holdOut(learner('ho.LOF', pars = list(k = 7, Threshold = 0.1,
 
 summary(lof.res)
 
+dev.new()
 par(mfrow = c(1,2))
 info <- attr(lof.res,'itsInfo')
 PTs.lof <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), c(1, 3, 2))
@@ -353,7 +361,7 @@ orh.res <- holdOut(learner('ho.ORh', pars = list(Threshold = 0.1,
 
 summary(lof.res)
 
-
+dev.off()
 par(mfrow = c(1,2))
 info <- attr(orh.res,'itsInfo')
 PTs.orh <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), c(1, 3, 2))
@@ -362,14 +370,14 @@ PRCurve(PTs.bp[ , , 1],PTs.bp[ , , 2],
 PRCurve(PTs.lof[ , , 1],PTs.lof[ , , 2],
 		add = T, lty = 2, avg = 'vertical')
 PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 legend('topright', c('BPrule', 'LOF', 'ORh'), lty = c(1, 2, 1), col = c('black', 'black', 'grey'))
 CRChart(PTs.bp[ , , 1],PTs.bp[ , , 2],
 		main = 'Cumulative Recall curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
 CRChart(PTs.lof[ , , 1],PTs.lof[ , , 2],
 		add = T, lty = 2, avg = 'vertical')
 CRChart(PTs.orh[ , , 1],PTs.orh[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 legend('bottomright', c('BPrule', 'LOF', 'ORh'), lty = c(1, 2, 1), col = c('black', 'black', 'grey'))
 
 ### SMOTE 
@@ -379,12 +387,12 @@ data$Species <- factor(ifelse(data$Species == "setosa", "rare", "common"))
 newData <- SMOTE(Species ~ ., data, perc.over = 600)
 table(newData$Species)
 
+dev.new()
 par(mfrow = c(1, 2))
 plot(data[, 1],data[, 2], pch = 19 + as.integer(data[, 3]), 
 	main = "Original Data")
 plot(newData[, 1],newData[, 2], pch = 19 + as.integer(newData[, 3]), 
 	main = "SMOTE'd Data")
-
 
 ### Naive Bayes
 library(e1071)
@@ -421,6 +429,7 @@ nb.res <- holdOut(learner('ho.nb', pars = list(Threshold = 0.1,
 				 
 summary(nb.res)
 
+dev.new()
 par(mfrow = c(1,2))
 info <- attr(nb.res,'itsInfo')
 PTs.nb <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
@@ -428,7 +437,7 @@ PTs.nb <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)),
 PRCurve(PTs.nb[ , , 1],PTs.nb[ , , 2],
 		main = 'PR curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
 PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 legend('topright', c('NaiveBayes', 'ORh'), lty = 1, 
 	  col = c('black', 'grey'))
 CRChart(PTs.nb[ , , 1],PTs.nb[ , , 2],
@@ -472,24 +481,25 @@ nbs.res <- holdOut(learner('ho.nbs', pars = list(Threshold = 0.1,
 
 summary(nbs.res)
 
+dev.new()
 par(mfrow = c(1,2))
 info <- attr(nbs.res,'itsInfo')
-PTs.ab <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
+PTs.nbs <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
 		c(1, 3, 2))
 PRCurve(PTs.nb[ , , 1],PTs.nb[ , , 2],
 		main = 'PR curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
 PRCurve(PTs.nbs[ , , 1],PTs.nbs[ , , 2],
 		add = T, lty = 2, avg = 'vertical')
 PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
-		add = T, lty = 2, col = 'gray', avg = 'vertical')
+		add = T, lty = 2, col = 'grey', avg = 'vertical')
 legend('topright', c('NaiveBayes', 'smoteNaiveBays', 'ORh'), lty = c(1, 2, 1), 
 		col = c('black', 'black', 'grey'))
 CRChart(PTs.nb[ , , 1],PTs.nb[ , , 2],
 		main = 'Cumulative Recall curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
 CRChart(PTs.nbs[ , , 1],PTs.nbs[ , , 2],
 		add = T, lty = 2, avg = 'vertical')
-CRChart(PTs.ab[ , , 1],PTs.ab[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+CRChart(PTs.orh[ , , 1],PTs.orh[ , , 2],
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 legend('bottomright', c('NaiveBayes', 'smoteNaiveBays', 'ORh'), lty = c(1, 2, 1), 
 		col = c('black', 'black', 'grey'))
 
@@ -542,6 +552,7 @@ ab.res <- holdOut(learner('ho.ab', pars = list(Threshold = 0.1,
 				 
 summary(ad.res)
 
+dev.new()
 par(mfrow = c(1,2))
 info <- attr(ab.res,'itsInfo')
 PTs.ab <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
@@ -549,9 +560,9 @@ PTs.ab <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)),
 PRCurve(PTs.nb[ , , 1],PTs.nb[ , , 2],
 		main = 'PR curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
 PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 PRCurve(PTs.ab[ , , 1],PTs.ab[ , , 2],
-		add = T, lty = 2, col = 'gray', avg = 'vertical')
+		add = T, lty = 2, col = 'grey', avg = 'vertical')
 legend('topright', c('NaiveBayes', 'ORh', 'AdaBoostM1'), lty = c(1, 1, 2), 
 	  col = c('black', 'grey', 'black'))
 CRChart(PTs.nb[ , , 1],PTs.nb[ , , 2],
@@ -559,7 +570,7 @@ CRChart(PTs.nb[ , , 1],PTs.nb[ , , 2],
 CRChart(PTs.orh[ , , 1],PTs.orh[ , , 2],
 		add = T, lty = 2, avg = 'vertical')
 CRChart(PTs.ab[ , , 1],PTs.ab[ , , 2],
-		add = T, lty = 1, col = 'gray', avg = 'vertical')
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
 legend('bottomright', c('NaiveBayes', 'ORh', 'AdaBoostM1'), lty = c(1, 2, 1), 
 	  col = c('black', 'grey', 'black'))
 
@@ -569,3 +580,144 @@ tr <- iris[idx, ]
 ts <- iris[-idx, ]
 nb <- naiveBayes(Species ~ ., tr)
 table(predict(nb, ts), ts$Species)
+
+trST <- tr
+nas <- sample(100, 90)
+trST[nas, "Species"] <- NA
+func <- function(m, d) {
+	p <- predict(m, d, type = "raw")
+	data.frame(cl = colnames(p)[apply(p, 1, which.max)], p = apply(p, 1, max))
+}
+
+nbSTbase <- naiveBayes(Species ~ ., trST[-nas, ])
+table(predict(nbSTbase, ts), ts$Species)
+
+nbST <- SelfTrain(Species ~ ., trST, learner("naiveBayes", list()), "func")
+table(predict(nbST, ts), ts$Species)
+
+
+
+### self-training Naive Bayes
+pred.nb <- function(m, d){
+	p <- predict(m, d, type = 'raw')
+	data.frame(cl = colnames(p) [apply(p, 1, which.max)],
+			p = apply(p, 1, max)
+	)
+}
+
+nb.st <- function(train, test) {
+	require(e1071, quietly = T)
+	train <- train[ , c('ID', 'Prod', 'Uprice', 'Insp')]
+	train [which(train$Ins == 'unkn'), 'Insp'] <- NA
+	train$Insp <- factor(train$Insp, levels = c('ok', 'fraud'))
+	model <- SelfTrain(Insp ~ ., train, learner('naiveBayes', list()),'pred.nb')
+	preds <- predict(model, test[, c('ID', 'Prod', 'Uprice', 'Insp')], 
+			type = 'raw')
+	return(list(rankOrder = order(preds[, 'fraud'], decreasing = T), 
+					rankScore = preds[, 'fraud'])
+	)
+}
+
+ho.nb.st <- function(from, train, test, ...){
+	res <- nb.st(train, test)
+	structure(evalOutlierRanking(test, res$rankOrder, ...),
+			itInfo = list(preds = res$rankScore,
+					trues = ifelse(test$Insp == 'fraud', 1, 0)
+			)
+	)
+}
+
+nbs.st.res <- holdOut(learner('ho.nb.st', pars = list(Threshold = 0.1, 
+						statsProds = globalStats)),
+		dataset(Insp ~., sales),
+		hldSettings(3, 0.3, 1234, T),
+		itsInfo = TRUE
+)
+
+summary(nbs.st.res)
+dev.new()
+par(mfrow = c(1,2))
+info <- attr(nbs.st.res,'itsInfo')
+PTs.nb.st <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
+		c(1, 3, 2))
+PRCurve(PTs.nb[ , , 1],PTs.nb[ , , 2],
+		main = 'PR curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
+PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
+PRCurve(PTs.nb.st[ , , 1],PTs.nb.st[ , , 2],
+		add = T, lty = 2, avg = 'vertical')
+legend('topright', c('NaiveBayes', 'ORh', 'NaiveBayes-ST'), lty = c(1, 1, 2), 
+		col = c('black', 'grey', 'black'))
+CRChart(PTs.nb[ , , 1],PTs.nb[ , , 2],
+		main = 'Cumulative Recall curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
+CRChart(PTs.orh[ , , 1],PTs.orh[ , , 2],
+		add = T, lty = 2, col = 'grey', avg = 'vertical')
+CRChart(PTs.nb.st[ , , 1],PTs.nb.st[ , , 2],
+		add = T, lty = 2, avg = 'vertical')
+legend('bottomright', c('NaiveBayes', 'ORh', 'NaiveBayes-ST'), lty = c(1, 2, 1), 
+		col = c('black', 'grey', 'black'))
+
+
+
+### self-trained AdaBoostlibrary(RWeka)
+
+pred.ada <- function(m, d){
+	p <- predict(m, d, type = 'probability')
+	data.frame(cl = colnames(p)[apply(p, 1, which.max)],
+			p = apply(p, 1, max)
+	)
+}
+ab.st <- function(train, test) {
+	require(RWeka, quietly = T)
+	train <- train[ , c('ID', 'Prod', 'Uprice', 'Insp')]
+	train[which(train$Ins == 'unkn'),'Insp'] <- NA
+	train$Insp <- factor(train$Insp, levels = c('ok', 'fraud'))
+	model <- SelfTrain(Insp ~., train, learner('AdaBoostM1', 
+						list(control = Weka_control(I = 100))),
+						'pred.ada')
+	preds <- predict(model, test[, c('ID', 'Prod', 'Uprice', 'Insp')], 
+			type = 'probability')
+	return(list(rankOrder = order(preds[, 'fraud'], decreasing = T), 
+					rankScore = preds[, 'fraud'])
+	)
+}
+
+ho.ab.st <- function(from, train, test, ...){
+	res <- ab.st(train, test)
+	structure(evalOutlierRanking(test, res$rankOrder, ...),
+			itInfo = list(preds = res$rankScore,
+					trues = ifelse(test$Insp == 'fraud', 1, 0)
+			)
+	)
+}
+
+ab.st.res <- holdOut(learner('ho.ab.st', pars = list(Threshold = 0.1, 
+						statsProds = globalStats)),
+		dataset(Insp ~., sales),
+		hldSettings(3, 0.3, 1234, T),
+		itsInfo = TRUE
+)
+
+summary(ab.st.res)
+
+dev.new()
+par(mfrow = c(1,2))
+info <- attr(ab.st.res,'itsInfo')
+PTs.ab.st <- aperm(array(unlist(info), dim = c(length(info[[1]]), 2, 3)), 
+		c(1, 3, 2))
+PRCurve(PTs.ab[ , , 1],PTs.ab[ , , 2],
+		main = 'PR curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
+PRCurve(PTs.orh[ , , 1],PTs.orh[ , , 2],
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
+PRCurve(PTs.ab.st[ , , 1],PTs.ab.st[ , , 2],
+		add = T, lty = 2, avg = 'vertical')
+legend('topright', c('NaiveBayes', 'ORh', 'AdaBoostM1-ST'), lty = c(1, 1, 2), 
+		col = c('black', 'grey', 'black'))
+CRChart(PTs.ab[ , , 1],PTs.ab[ , , 2],
+		main = 'Cumulative Recall curve', lty = 1, xlim = c(0, 1), ylim = c(0, 1), avg = 'vertical')
+CRChart(PTs.orh[ , , 1],PTs.orh[ , , 2],
+		add = T, lty = 2, avg = 'vertical')
+CRChart(PTs.ab.st[ , , 1],PTs.ab.st[ , , 2],
+		add = T, lty = 1, col = 'grey', avg = 'vertical')
+legend('bottomright', c('NaiveBayes', 'ORh', 'AdaBoostM1-ST'), lty = c(1, 1, 2), 
+		col = c('black', 'grey', 'black'))
